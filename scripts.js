@@ -1,22 +1,17 @@
 // scripts.js
 // const apiKey = 'e69c0e8f872a4232ba96d27925f95f3e'; // <<< Replace with your real API key
-
 // Function to fetch stock data and update charts
-async function fetchStockData(symbol, chart, timestampElement) {
-    const apiKey = 'e69c0e8f872a4232ba96d27925f95f3e'; // Replace this with your actual API key
+async function fetchStockData(symbol, chart, timestampElement, titleElement) {
+    const apiKey = 'e69c0e8f872a4232ba96d27925f95f3e'; // Replace with your real TwelveData API key
     const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1week&start_date=2023-01-01&apikey=${apiKey}`;
 
     try {
         const response = await fetch(url);
         const data = await response.json();
 
-        console.log(`Data fetched for ${symbol}:`, data); // Debugging line: log the fetched data
+        console.log(`Data fetched for ${symbol}:`, data);
 
         if (data.status === 'ok' && data.values.length > 0) {
-            // Log the raw data values
-            console.log(`Parsed data for ${symbol}:`, data.values);
-
-            // Map the raw data into the format for Chart.js
             const chartData = data.values.map(item => ({
                 x: new Date(item.datetime),
                 o: parseFloat(item.open),
@@ -25,39 +20,45 @@ async function fetchStockData(symbol, chart, timestampElement) {
                 c: parseFloat(item.close)
             }));
 
-            console.log(`Formatted data for ${symbol}:`, chartData); // Debugging line: log the formatted chart data
+            // Sort the data by date ascending (older first)
+            chartData.sort((a, b) => a.x - b.x);
 
-            // Update the chart with the new data
+            // Update the chart
             chart.data.datasets[0].data = chartData;
             chart.update();
 
-            // Update the timestamp
+            // Update last updated time
             timestampElement.textContent = `Last updated: ${new Date().toLocaleString()}`;
+
+            // Update the title element with the latest price and date
+            const latestData = chartData[chartData.length - 1];
+            const latestPrice = latestData.c.toFixed(2);
+            const latestDate = latestData.x.toLocaleDateString();
+            titleElement.textContent = `${symbol}: $${latestPrice} (${latestDate})`;
         } else {
-            console.error(`Error fetching data for ${symbol}: No data returned`);
+            console.error(`Error fetching data for ${symbol}:`, data);
         }
     } catch (error) {
         console.error(`Error fetching data for ${symbol}: ${error}`);
-        alert(`Error fetching data for ${symbol}: ${error}`); // Alert to show the error in case of an issue
+        alert(`Error fetching data for ${symbol}: ${error}`);
     }
 }
 
-// Initialize the chart for a given symbol
-function createChart(chartElement, symbol) {
+// Create Chart
+function createChart(chartElement) {
     const ctx = chartElement.getContext('2d');
     return new Chart(ctx, {
-        type: 'candlestick', // This is where the candlestick chart type is defined
+        type: 'candlestick',
         data: {
             datasets: [{
-                label: `${symbol} Candlestick Chart`,
-                data: [],  // Empty data will be filled later
-                borderColor: '#FF5733',
-                backgroundColor: '#FF5733',
+                label: '',
+                data: [],
+                borderColor: '#00ff99',
+                backgroundColor: '#00ff99',
                 borderWidth: 1,
-                // Set the width of the candlesticks to a smaller size
-                barThickness: 5,  // Controls the width of each candlestick (adjust this value)
-                categoryPercentage: 0.8,  // Controls the spacing between candlesticks
-                barPercentage: 1, // Ensures candlesticks occupy full space
+                barThickness: 5,
+                categoryPercentage: 0.8,
+                barPercentage: 1,
             }]
         },
         options: {
@@ -66,33 +67,57 @@ function createChart(chartElement, symbol) {
                 legend: {
                     display: false
                 },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
             },
             scales: {
                 x: {
                     type: 'time',
                     time: {
                         unit: 'week',
-                        tooltipFormat: 'll', // Date format for the tooltip
+                        tooltipFormat: 'yyyy/MM/dd',
+                        stepSize: 4,
                         displayFormats: {
-                            week: 'MMM dd, yyyy' // Format for date on x-axis
+                            week: 'yyyy/MM/dd'
                         }
                     },
+                    distribution: 'linear',
+                    bounds: 'data',
                     title: {
                         display: true,
-                        text: 'Date'
+                        text: 'Date',
+                        color: '#ffffff'
                     },
                     ticks: {
-                        maxRotation: 0,  // Ensures that the labels on x-axis are not rotated
-                        autoSkip: true,  // Skips ticks if needed
+                        source: 'auto',
+                        autoSkip: true,
+                        maxTicksLimit: 15,
+                        color: '#ffffff',
+                        maxRotation: 45,
+                        minRotation: 45,
+                        font: {
+                            size: 10
+                        }
                     },
+                    grid: {
+                        color: '#444',
+                        display: true
+                    }
                 },
                 y: {
-                    ticks: {
-                        beginAtZero: false
-                    },
+                    beginAtZero: false,
                     title: {
                         display: true,
-                        text: 'Price (USD)'
+                        text: 'Price (USD)',
+                        color: '#ffffff'
+                    },
+                    ticks: {
+                        color: '#ffffff'
+                    },
+                    grid: {
+                        color: '#444'
                     }
                 }
             }
@@ -100,37 +125,27 @@ function createChart(chartElement, symbol) {
     });
 }
 
-// Initialize and fetch data for each stock chart
+// Initialize charts
 document.addEventListener('DOMContentLoaded', () => {
-    // DOW (DIA) Chart
-    const dowChartElement = document.getElementById('dowChart');
-    const dowTimestamp = document.getElementById('dowTimestamp');
-    const dowChart = createChart(dowChartElement, 'DIA');
-    fetchStockData('DIA', dowChart, dowTimestamp);
+    const charts = [
+        { symbol: 'DIA', chartId: 'dowChart', timeId: 'dowTimestamp', titleId: 'dowTitle' },
+        { symbol: 'QQQ', chartId: 'nasdaqChart', timeId: 'nasdaqTimestamp', titleId: 'nasdaqTitle' },
+        { symbol: 'SPY', chartId: 'sp500Chart', timeId: 'sp500Timestamp', titleId: 'sp500Title' },
+        { symbol: 'TSLA', chartId: 'teslaChart', timeId: 'teslaTimestamp', titleId: 'teslaTitle' }
+    ];
 
-    // NASDAQ (QQQ) Chart
-    const nasdaqChartElement = document.getElementById('nasdaqChart');
-    const nasdaqTimestamp = document.getElementById('nasdaqTimestamp');
-    const nasdaqChart = createChart(nasdaqChartElement, 'QQQ');
-    fetchStockData('QQQ', nasdaqChart, nasdaqTimestamp);
+    charts.forEach(({ symbol, chartId, timeId, titleId }) => {
+        const chartElement = document.getElementById(chartId);
+        const timestampElement = document.getElementById(timeId);
+        const titleElement = document.getElementById(titleId);
 
-    // S&P 500 (SPY) Chart
-    const sp500ChartElement = document.getElementById('sp500Chart');
-    const sp500Timestamp = document.getElementById('sp500Timestamp');
-    const sp500Chart = createChart(sp500ChartElement, 'SPY');
-    fetchStockData('SPY', sp500Chart, sp500Timestamp);
+        const chart = createChart(chartElement);
 
-    // Tesla (TSLA) Chart
-    const teslaChartElement = document.getElementById('teslaChart');
-    const teslaTimestamp = document.getElementById('teslaTimestamp');
-    const teslaChart = createChart(teslaChartElement, 'TSLA');
-    fetchStockData('TSLA', teslaChart, teslaTimestamp);
+        fetchStockData(symbol, chart, timestampElement, titleElement);
 
-    // Refresh charts every 5 minutes
-    setInterval(() => {
-        fetchStockData('DIA', dowChart, dowTimestamp);
-        fetchStockData('QQQ', nasdaqChart, nasdaqTimestamp);
-        fetchStockData('SPY', sp500Chart, sp500Timestamp);
-        fetchStockData('TSLA', teslaChart, teslaTimestamp);
-    }, 5 * 60 * 1000); // 5 minutes in milliseconds
+        // Refresh every 5 minutes
+        setInterval(() => {
+            fetchStockData(symbol, chart, timestampElement, titleElement);
+        }, 5 * 60 * 1000);
+    });
 });

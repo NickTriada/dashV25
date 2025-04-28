@@ -80,3 +80,42 @@ div[id$="Timestamp"] {
     margin-top: 5px; /* Reduced top margin to bring it closer to the chart */
     opacity: 0.8; /* Slightly transparent for added subtlety */
 }
+body {
+    background-color: #121212;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, minmax(300px, 1fr));
+    gap: 20px;
+    width: 95%;
+    margin: 20px auto;
+}
+
+.chart-container {
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 255, 153, 0.3);
+    position: relative;
+}
+
+.chart-title {
+    position: absolute;
+    top: 10px;
+    left: 100px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #00ff99;
+}
+
+.timestamp {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #ccc;
+}
+
