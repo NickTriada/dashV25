@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Charts</title>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Chart.js Financial Plugin (Candlestick Charts) -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
+
+    <!-- Chart.js Date Adapter (Necessary for Time-based data) -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+    <!-- Link to your external CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="charts-container">
+        <div class="chart-grid">
+            <div class="chart-item">
+                <canvas id="dowChart"></canvas>
+                <div id="dowTimestamp">DOW Last updated: Loading...</div>
+            </div>
+            <div class="chart-item">
+                <canvas id="nasdaqChart"></canvas>
+                <div id="nasdaqTimestamp">NASDAQ Last updated: Loading...</div>
+            </div>
+            <div class="chart-item">
+                <canvas id="sp500Chart"></canvas>
+                <div id="sp500Timestamp">S&P 500 Last updated: Loading...</div>
+            </div>
+            <div class="chart-item">
+                <canvas id="teslaChart"></canvas>
+                <div id="teslaTimestamp">TESLA Last updated: Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link to your external JS -->
+    <script src="scripts.js"></script>
+</body>
+</html>
