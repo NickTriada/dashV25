@@ -77,28 +77,20 @@ function createChart(chartElement) {
                     type: 'time',
                     time: {
                         unit: 'week',
-                        tooltipFormat: 'yyyy/MM/dd',
-                        stepSize: 4,
                         displayFormats: {
-                            week: 'yyyy/MM/dd'
-                        }
-                    },
-                    distribution: 'linear',
-                    bounds: 'data',
-                    title: {
-                        display: true,
-                        text: 'Date',
-                        color: '#ffffff'
+                            week: 'yyyy/MMM'
+                        },
+                        isoWeekday: 1
                     },
                     ticks: {
                         source: 'auto',
-                        autoSkip: true,
-                        maxTicksLimit: 15,
+                        autoSkip: false,
+                        stepSize: 4,
                         color: '#ffffff',
                         maxRotation: 45,
                         minRotation: 45,
                         font: {
-                            size: 10
+                            size: 14
                         }
                     },
                     grid: {
@@ -111,10 +103,16 @@ function createChart(chartElement) {
                     title: {
                         display: true,
                         text: 'Price (USD)',
-                        color: '#ffffff'
+                        color: '#ffffff',
+                        font: {
+                            size: 14
+                        }
                     },
                     ticks: {
-                        color: '#ffffff'
+                        color: '#ffffff',
+                        font: {
+                            size: 14
+                        }
                     },
                     grid: {
                         color: '#444'
