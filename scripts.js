@@ -2,7 +2,7 @@
 // const apiKey = 'e69c0e8f872a4232ba96d27925f95f3e'; // <<< Replace with your real API key
 // Function to fetch stock data and update charts
 async function fetchStockData(symbol, chart, timestampElement, titleElement) {
-    const apiKey = 'e69c0e8f872a4232ba96d27925f95f3e'; // Replace with your real TwelveData API key
+    const apiKey = '4286428c8c92414e82296180f2c21770'; // Replace with your real TwelveData API key
     const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1week&start_date=2023-01-01&apikey=${apiKey}`;
 
     try {
@@ -144,6 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Refresh every 5 minutes
         setInterval(() => {
             fetchStockData(symbol, chart, timestampElement, titleElement);
-        }, 5 * 60 * 1000);
+        }, 10 * 60 * 1000);
     });
 });
