@@ -9,10 +9,51 @@
     <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
 </head>
-<body>
+<body onload="startTime(); tdate()">
     <h1>Stock Charts Dashboard</h1>
 
     <div class="grid-container">
+        <!-- Clock Container -->
+        <div class="chart-container clock-container">
+            <div class="chart-title">Current Time</div>
+            <div class="clock-content">
+                <div class="clock" id="time"></div>
+                <div class="date"><span id="date"></span></div>
+            </div>
+        </div>
+
+        <!-- Calendar Container -->
+        <div class="chart-container calendar-container">
+            <div class="chart-title">Calendar</div>
+            <div class="calendar">
+                <div class="calendar-header">
+                    <span class="month-picker" id="month-picker"></span>
+                    <div class="year-picker">
+                        <span class="year-change" id="prev-year">
+                            <pre><</pre>
+                        </span>
+                        <span id="year"></span>
+                        <span class="year-change" id="next-year">
+                            <pre>></pre>
+                        </span>
+                    </div>
+                </div>
+                <div class="calendar-body">
+                    <div class="calendar-week-day">
+                        <div>Sun</div>
+                        <div>Mon</div>
+                        <div>Tue</div>
+                        <div>Wed</div>
+                        <div>Thu</div>
+                        <div>Fri</div>
+                        <div>Sat</div>
+                    </div>
+                    <div class="calendar-days"></div>
+                </div>
+                <div class="month-list"></div>
+            </div>
+        </div>
+
         <div class="chart-container">
             <div class="chart-title" id="dowTitle">DOW: now $...</div>
             <canvas id="dowChart"></canvas>
@@ -39,5 +80,6 @@
     </div>
 
     <script src="scripts.js"></script>
+    <p>Version V25 (30-APR-2025)</p>
 </body>
 </html>

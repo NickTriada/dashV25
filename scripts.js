@@ -123,8 +123,131 @@ function createChart(chartElement) {
     });
 }
 
-// Initialize charts
+// Calendar and Clock Functions
+let calendar = document.querySelector('.calendar');
+let month_picker = document.querySelector('#month-picker');
+let calendar_days = document.querySelector('.calendar-days');
+let year_element = document.querySelector('#year');
+const month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+// Clock Functions
+function startTime() {
+    const today = new Date();
+    let h = today.getHours();
+    let m = today.getMinutes();
+    let s = today.getSeconds();
+    let ampm = h >= 12 ? 'PM' : 'AM';
+    
+    h = h % 12;
+    h = h ? h : 12;
+    
+    m = checkTime(m);
+    s = checkTime(s);
+    
+    document.getElementById('time').innerHTML = h + ":" + m + ":" + s + " " + ampm;
+    setTimeout(startTime, 1000);
+}
+
+function checkTime(i) {
+    if (i < 10) {i = "0" + i};
+    return i;
+}
+
+function tdate() {
+    const today = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('date').innerHTML = today.toLocaleDateString('en-US', options);
+}
+
+// Calendar Functions
+function isLeapYear(year) {
+    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+}
+
+function getFebDays(year) {
+    return isLeapYear(year) ? 29 : 28;
+}
+
+function generateCalendar(month, year) {
+    if (!calendar_days) return; // Guard clause
+
+    const days_of_month = [31, getFebDays(year), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    calendar_days.innerHTML = '';
+
+    let currDate = new Date();
+    let curr_month = month !== undefined ? month : currDate.getMonth();
+    let curr_year = year !== undefined ? year : currDate.getFullYear();
+
+    // Update month and year in the header
+    month_picker.textContent = month_names[curr_month];
+    year_element.textContent = curr_year;
+
+    // Get first day of the month
+    let first_day = new Date(curr_year, curr_month, 1);
+    let first_day_weekday = first_day.getDay();
+
+    // Create empty cells for days before the first day of the month
+    for (let i = 0; i < first_day_weekday; i++) {
+        let empty_day = document.createElement('div');
+        calendar_days.appendChild(empty_day);
+    }
+
+    // Create cells for each day of the month
+    for (let day = 1; day <= days_of_month[curr_month]; day++) {
+        let day_element = document.createElement('div');
+        day_element.classList.add('calendar-day-hover');
+        day_element.textContent = day;
+
+        // Highlight current date
+        if (day === currDate.getDate() && curr_month === currDate.getMonth() && curr_year === currDate.getFullYear()) {
+            day_element.classList.add('curr-date');
+        }
+
+        calendar_days.appendChild(day_element);
+    }
+}
+
+// Initialize calendar
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize calendar
+    let currDate = new Date();
+    let curr_month = {value: currDate.getMonth()};
+    let curr_year = {value: currDate.getFullYear()};
+
+    // Create month list
+    let month_list = calendar.querySelector('.month-list');
+    month_list.innerHTML = '';
+    month_names.forEach((e, index) => {
+        let month = document.createElement('div');
+        month.innerHTML = `<div data-month="${index}">${e}</div>`;
+        month.querySelector('div').onclick = () => {
+            month_list.classList.remove('show');
+            curr_month.value = index;
+            generateCalendar(index, curr_year.value);
+        };
+        month_list.appendChild(month);
+    });
+
+    // Set up month picker click handler
+    month_picker.onclick = () => {
+        month_list.classList.add('show');
+    };
+
+    // Set up year navigation
+    document.querySelector('#prev-year').onclick = () => {
+        curr_year.value--;
+        generateCalendar(curr_month.value, curr_year.value);
+    };
+
+    document.querySelector('#next-year').onclick = () => {
+        curr_year.value++;
+        generateCalendar(curr_month.value, curr_year.value);
+    };
+
+    // Generate initial calendar
+    generateCalendar(curr_month.value, curr_year.value);
+
+    // Initialize charts
     const charts = [
         { symbol: 'DIA', chartId: 'dowChart', timeId: 'dowTimestamp', titleId: 'dowTitle' },
         { symbol: 'QQQ', chartId: 'nasdaqChart', timeId: 'nasdaqTimestamp', titleId: 'nasdaqTitle' },
@@ -132,6 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { symbol: 'TSLA', chartId: 'teslaChart', timeId: 'teslaTimestamp', titleId: 'teslaTitle' }
     ];
 
+    // Initialize charts
     charts.forEach(({ symbol, chartId, timeId, titleId }) => {
         const chartElement = document.getElementById(chartId);
         const timestampElement = document.getElementById(timeId);
@@ -141,9 +265,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         fetchStockData(symbol, chart, timestampElement, titleElement);
 
-        // Refresh every 5 minutes
         setInterval(() => {
             fetchStockData(symbol, chart, timestampElement, titleElement);
         }, 10 * 60 * 1000);
     });
+
+    // Start clock and date
+    startTime();
+    tdate();
 });
