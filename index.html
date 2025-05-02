@@ -8,9 +8,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
     <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
+    <script src="weather.js"></script>  
 </head>
 <body onload="startTime(); tdate()">
-    <h1>Stock Charts Dashboard</h1>
+    <!-- <h1>Stock Charts Dashboard</h1> -->
 
     <div class="grid-container">
         <!-- Combined Clock and Calendar Container -->
@@ -70,9 +71,9 @@
             <canvas id="btcChart"></canvas>
             <div class="timestamp" id="btcTimestamp">Last updated: Loading...</div>
         </div>
+        <div class="forecast" id="forecast"></div>
     </div>
-
+    <p>Version V25 (02-MAY-2025)</p>
     <script src="scripts.js"></script>
-    <p>Version V25 (30-APR-2025)</p>
 </body>
 </html>
