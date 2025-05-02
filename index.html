@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Stock Charts Dashboard</title>
+    <!-- <title>Stock Charts Dashboard</title> -->
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
@@ -13,44 +13,31 @@
     <h1>Stock Charts Dashboard</h1>
 
     <div class="grid-container">
-        <!-- Clock Container -->
-        <div class="chart-container clock-container">
-            <div class="chart-title">Current Time</div>
-            <div class="clock-content">
-                <div class="clock" id="time"></div>
-                <div class="date"><span id="date"></span></div>
-            </div>
-        </div>
-
-        <!-- Calendar Container -->
-        <div class="chart-container calendar-container">
-            <div class="chart-title">Calendar</div>
-            <div class="calendar">
-                <div class="calendar-header">
-                    <span class="month-picker" id="month-picker"></span>
-                    <div class="year-picker">
-                        <span class="year-change" id="prev-year">
-                            <pre><</pre>
-                        </span>
-                        <span id="year"></span>
-                        <span class="year-change" id="next-year">
-                            <pre>></pre>
-                        </span>
+        <!-- Combined Clock and Calendar Container -->
+        <div class="chart-container datetime-container">
+            <div class="datetime-content">
+                <div class="clock-section">
+                    <div class="clock" id="time"></div>
+                </div>
+                <div class="calendar-date-section">
+                    <div class="calendar-wrapper">
+                        <div class="calendar">
+                            <div class="calendar-header" id="calendar-header"></div>
+                            <div class="calendar-body">
+                                <div class="calendar-week-day">
+                                    <div>Sun</div>
+                                    <div>Mon</div>
+                                    <div>Tue</div>
+                                    <div>Wed</div>
+                                    <div>Thu</div>
+                                    <div>Fri</div>
+                                    <div>Sat</div>
+                                </div>
+                                <div class="calendar-days"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="calendar-body">
-                    <div class="calendar-week-day">
-                        <div>Sun</div>
-                        <div>Mon</div>
-                        <div>Tue</div>
-                        <div>Wed</div>
-                        <div>Thu</div>
-                        <div>Fri</div>
-                        <div>Sat</div>
-                    </div>
-                    <div class="calendar-days"></div>
-                </div>
-                <div class="month-list"></div>
             </div>
         </div>
 
@@ -76,6 +63,12 @@
             <div class="chart-title" id="teslaTitle">TESLA: now $...</div>
             <canvas id="teslaChart"></canvas>
             <div class="timestamp" id="teslaTimestamp">Last updated: Loading...</div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title" id="btcTitle">BTC/USD: now $...</div>
+            <canvas id="btcChart"></canvas>
+            <div class="timestamp" id="btcTimestamp">Last updated: Loading...</div>
         </div>
     </div>
 

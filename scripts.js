@@ -1,9 +1,18 @@
 // scripts.js
-// const apiKey = 'e69c0e8f872a4232ba96d27925f95f3e'; // <<< Replace with your real API key
+// const apiKey = '4286428c8c92414e82296180f2c21770'; // <<< Replace with your real API key
 // Function to fetch stock data and update charts
-async function fetchStockData(symbol, chart, timestampElement, titleElement) {
+async function fetchStockData(symbol, chart, timestampElement, titleElement, displayName) {
     const apiKey = '4286428c8c92414e82296180f2c21770'; // Replace with your real TwelveData API key
-    const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1week&start_date=2023-01-01&apikey=${apiKey}`;
+    
+    // Calculate date one year ago from today
+    const today = new Date();
+    const oneYearAgo = new Date(today);
+    oneYearAgo.setFullYear(today.getFullYear() - 1);
+    
+    // Format date to YYYY-MM-DD
+    const startDate = oneYearAgo.toISOString().split('T')[0];
+    const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1week&start_date=${startDate}&apikey=${apiKey}`;
+    // const url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=3day&start_date=${startDate}&apikey=${apiKey}`;
 
     try {
         const response = await fetch(url);
@@ -27,14 +36,18 @@ async function fetchStockData(symbol, chart, timestampElement, titleElement) {
             chart.data.datasets[0].data = chartData;
             chart.update();
 
+            // Get current date and time for the timestamp
+            const now = new Date();
+            const currentTime = now.toLocaleTimeString('en-US', { hour12: false });
+            const currentDate = now.toLocaleDateString('en-US');
+            
             // Update last updated time
-            timestampElement.textContent = `Last updated: ${new Date().toLocaleString()}`;
+            timestampElement.textContent = `Last updated: ${currentDate} ${currentTime}`;
 
-            // Update the title element with the latest price and date
+            // Update the title element with the latest price
             const latestData = chartData[chartData.length - 1];
             const latestPrice = latestData.c.toFixed(2);
-            const latestDate = latestData.x.toLocaleDateString();
-            titleElement.textContent = `${symbol}: $${latestPrice} (${latestDate})`;
+            titleElement.textContent = `${displayName}: $${latestPrice}`;
         } else {
             console.error(`Error fetching data for ${symbol}:`, data);
         }
@@ -56,7 +69,7 @@ function createChart(chartElement) {
                 borderColor: '#00ff99',
                 backgroundColor: '#00ff99',
                 borderWidth: 1,
-                barThickness: 5,
+                barThickness: 3,  // Reduced for 3-day candles
                 categoryPercentage: 0.8,
                 barPercentage: 1,
             }]
@@ -76,16 +89,15 @@ function createChart(chartElement) {
                 x: {
                     type: 'time',
                     time: {
-                        unit: 'week',
+                        unit: 'day',  // Changed from 'week' to 'day'
                         displayFormats: {
-                            week: 'yyyy/MMM'
-                        },
-                        isoWeekday: 1
+                            day: 'MMM dd'  // Updated display format for days
+                        }
                     },
                     ticks: {
                         source: 'auto',
-                        autoSkip: false,
-                        stepSize: 4,
+                        autoSkip: true,
+                        maxTicksLimit: 12,  // Limit the number of x-axis ticks
                         color: '#ffffff',
                         maxRotation: 45,
                         minRotation: 45,
@@ -136,15 +148,13 @@ function startTime() {
     let h = today.getHours();
     let m = today.getMinutes();
     let s = today.getSeconds();
-    let ampm = h >= 12 ? 'PM' : 'AM';
     
-    h = h % 12;
-    h = h ? h : 12;
-    
+    // Add leading zeros
+    h = checkTime(h);
     m = checkTime(m);
     s = checkTime(s);
     
-    document.getElementById('time').innerHTML = h + ":" + m + ":" + s + " " + ampm;
+    document.getElementById('time').innerHTML = h + ":" + m + ":" + s;
     setTimeout(startTime, 1000);
 }
 
@@ -155,8 +165,21 @@ function checkTime(i) {
 
 function tdate() {
     const today = new Date();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('date').innerHTML = today.toLocaleDateString('en-US', options);
+    
+    // Get weekday
+    const weekday = today.toLocaleDateString('en-US', { weekday: 'long' });
+    
+    // Get day and month
+    const day = today.getDate();
+    const month = today.toLocaleDateString('en-US', { month: 'long' });
+    
+    // Get year
+    const year = today.getFullYear();
+    
+    // Update the DOM elements
+    document.getElementById('weekday').textContent = weekday;
+    document.getElementById('monthday').textContent = `${day} ${month}`;
+    document.getElementById('year-display').textContent = year;
 }
 
 // Calendar Functions
@@ -168,22 +191,29 @@ function getFebDays(year) {
     return isLeapYear(year) ? 29 : 28;
 }
 
-function generateCalendar(month, year) {
-    if (!calendar_days) return; // Guard clause
+function generateCalendar() {
+    if (!calendar_days) return;
 
-    const days_of_month = [31, getFebDays(year), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const today = new Date();
+    
+    // Format the header date
+    const headerDate = today.toLocaleDateString('en-US', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+    
+    // Update header with formatted date
+    document.getElementById('calendar-header').textContent = headerDate;
+
+    const currMonth = today.getMonth();
+    const currYear = today.getFullYear();
+    const days_of_month = [31, getFebDays(currYear), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     calendar_days.innerHTML = '';
 
-    let currDate = new Date();
-    let curr_month = month !== undefined ? month : currDate.getMonth();
-    let curr_year = year !== undefined ? year : currDate.getFullYear();
-
-    // Update month and year in the header
-    month_picker.textContent = month_names[curr_month];
-    year_element.textContent = curr_year;
-
     // Get first day of the month
-    let first_day = new Date(curr_year, curr_month, 1);
+    let first_day = new Date(currYear, currMonth, 1);
     let first_day_weekday = first_day.getDay();
 
     // Create empty cells for days before the first day of the month
@@ -193,13 +223,12 @@ function generateCalendar(month, year) {
     }
 
     // Create cells for each day of the month
-    for (let day = 1; day <= days_of_month[curr_month]; day++) {
+    for (let day = 1; day <= days_of_month[currMonth]; day++) {
         let day_element = document.createElement('div');
-        day_element.classList.add('calendar-day-hover');
         day_element.textContent = day;
 
         // Highlight current date
-        if (day === currDate.getDate() && curr_month === currDate.getMonth() && curr_year === currDate.getFullYear()) {
+        if (day === today.getDate()) {
             day_element.classList.add('curr-date');
         }
 
@@ -207,66 +236,42 @@ function generateCalendar(month, year) {
     }
 }
 
-// Initialize calendar
+// Initialize charts
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize calendar
-    let currDate = new Date();
-    let curr_month = {value: currDate.getMonth()};
-    let curr_year = {value: currDate.getFullYear()};
+    generateCalendar();
+    
+    // Update calendar daily at midnight
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const timeUntilMidnight = tomorrow - now;
+    
+    setTimeout(() => {
+        generateCalendar();
+        // After first update, update daily
+        setInterval(generateCalendar, 24 * 60 * 60 * 1000);
+    }, timeUntilMidnight);
 
-    // Create month list
-    let month_list = calendar.querySelector('.month-list');
-    month_list.innerHTML = '';
-    month_names.forEach((e, index) => {
-        let month = document.createElement('div');
-        month.innerHTML = `<div data-month="${index}">${e}</div>`;
-        month.querySelector('div').onclick = () => {
-            month_list.classList.remove('show');
-            curr_month.value = index;
-            generateCalendar(index, curr_year.value);
-        };
-        month_list.appendChild(month);
-    });
-
-    // Set up month picker click handler
-    month_picker.onclick = () => {
-        month_list.classList.add('show');
-    };
-
-    // Set up year navigation
-    document.querySelector('#prev-year').onclick = () => {
-        curr_year.value--;
-        generateCalendar(curr_month.value, curr_year.value);
-    };
-
-    document.querySelector('#next-year').onclick = () => {
-        curr_year.value++;
-        generateCalendar(curr_month.value, curr_year.value);
-    };
-
-    // Generate initial calendar
-    generateCalendar(curr_month.value, curr_year.value);
-
-    // Initialize charts
+    // Initialize charts with proper display names
     const charts = [
-        { symbol: 'DIA', chartId: 'dowChart', timeId: 'dowTimestamp', titleId: 'dowTitle' },
-        { symbol: 'QQQ', chartId: 'nasdaqChart', timeId: 'nasdaqTimestamp', titleId: 'nasdaqTitle' },
-        { symbol: 'SPY', chartId: 'sp500Chart', timeId: 'sp500Timestamp', titleId: 'sp500Title' },
-        { symbol: 'TSLA', chartId: 'teslaChart', timeId: 'teslaTimestamp', titleId: 'teslaTitle' }
+        { symbol: 'DIA', displayName: 'DOW', chartId: 'dowChart', timeId: 'dowTimestamp', titleId: 'dowTitle' },
+        { symbol: 'QQQ', displayName: 'NASDAQ', chartId: 'nasdaqChart', timeId: 'nasdaqTimestamp', titleId: 'nasdaqTitle' },
+        { symbol: 'SPY', displayName: 'S&P500', chartId: 'sp500Chart', timeId: 'sp500Timestamp', titleId: 'sp500Title' },
+        { symbol: 'TSLA', displayName: 'TESLA', chartId: 'teslaChart', timeId: 'teslaTimestamp', titleId: 'teslaTitle' },
+        { symbol: 'BTC/USD', displayName: 'BTC/USD', chartId: 'btcChart', timeId: 'btcTimestamp', titleId: 'btcTitle' }
     ];
 
     // Initialize charts
-    charts.forEach(({ symbol, chartId, timeId, titleId }) => {
+    charts.forEach(({ symbol, displayName, chartId, timeId, titleId }) => {
         const chartElement = document.getElementById(chartId);
         const timestampElement = document.getElementById(timeId);
         const titleElement = document.getElementById(titleId);
 
         const chart = createChart(chartElement);
 
-        fetchStockData(symbol, chart, timestampElement, titleElement);
+        fetchStockData(symbol, chart, timestampElement, titleElement, displayName);
 
         setInterval(() => {
-            fetchStockData(symbol, chart, timestampElement, titleElement);
+            fetchStockData(symbol, chart, timestampElement, titleElement, displayName);
         }, 10 * 60 * 1000);
     });
 
