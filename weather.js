@@ -42,19 +42,21 @@ async function getWeather() {
     const forecastDiv = document.getElementById('forecast');
     forecastDiv.innerHTML = '';
     
-    // Add current day's weather first
+    // Helper function to format date to short format (e.g., "3-Sat")
+    function formatDateShort(date) {
+      return `${date.getDate()}-${date.toLocaleDateString('en-US', { weekday: 'short' })}`;
+    }
+
+    // Get current day's data
     const currentDate = new Date(currentData.dt * 1000);
-    const currentDayCard = `
-      <div class="day">
-        <h2>${formatDateWithoutYear(currentDate)}</h2>
-        <p><strong>Temp:</strong> ${currentData.main.temp.toFixed(1)}°C</p>
-        <p><strong>Min:</strong> ${currentData.main.temp_min.toFixed(1)}°C</p>
-        <p><strong>Max:</strong> ${currentData.main.temp_max.toFixed(1)}°C</p>
-        <p><strong>Wind:</strong> ${currentData.wind.speed} m/s</p>
-        <p><strong>Weather:</strong> ${currentData.weather[0].description}</p>
-      </div>
-    `;
-    forecastDiv.innerHTML = currentDayCard;
+    const currentDayData = {
+      date: currentDate,
+      temp: currentData.main.temp.toFixed(1),
+      min: currentData.main.temp_min.toFixed(1),
+      max: currentData.main.temp_max.toFixed(1),
+      wind: currentData.wind.speed,
+      weather: currentData.weather[0].description
+    };
 
     // Group all forecasts by day
     const dailyForecasts = {};
@@ -62,7 +64,7 @@ async function getWeather() {
       const date = new Date(forecast.dt * 1000);
       const dateStr = date.toDateString();
       
-      // Skip today's date since we already showed it from current weather
+      // Skip today's date since we already have it from current weather
       if (dateStr === currentDate.toDateString()) {
         return;
       }
@@ -83,27 +85,51 @@ async function getWeather() {
       }
     });
 
-    // Display each day's forecast
+    // Prepare all days data
+    const allDaysData = [currentDayData];
     Object.values(dailyForecasts).forEach(day => {
-      // Skip if we don't have a midday forecast
       if (!day.middayForecast) return;
       
-      // Calculate min/max from all forecasts for this day
       const temps = day.forecasts.map(f => f.main.temp);
       const minTemp = Math.min(...temps);
       const maxTemp = Math.max(...temps);
       
-      const forecast = day.middayForecast;
-      forecastDiv.innerHTML += `
-        <div class="day">
-          <h3>${formatDateWithoutYear(day.date)}</h3>
-          <p><strong>Temp:</strong> ${forecast.main.temp.toFixed(1)}°C</p>
-          <p><strong>Min:</strong> ${minTemp.toFixed(1)}°C</p>
-          <p><strong>Max:</strong> ${maxTemp.toFixed(1)}°C</p>
-          <p><strong>Wind:</strong> ${forecast.wind.speed} m/s</p>
-          <p><strong>Weather:</strong> ${forecast.weather[0].description}</p>
-        </div>
-      `;
+      allDaysData.push({
+        date: day.date,
+        temp: day.middayForecast.main.temp.toFixed(1),
+        min: minTemp.toFixed(1),
+        max: maxTemp.toFixed(1),
+        wind: day.middayForecast.wind.speed,
+        weather: day.middayForecast.weather[0].description
+      });
+    });
+
+    // Create header row with dates
+    let headerRow = '<div class="day header"><div class="cell">Day</div>';
+    allDaysData.forEach((day, index) => {
+      const isToday = index === 0; // First day is always today
+      headerRow += `<div class="cell ${isToday ? 'today' : ''}">${formatDateShort(day.date)}</div>`;
+    });
+    headerRow += '</div>';
+    forecastDiv.innerHTML = headerRow;
+
+    // Create rows for each parameter
+    const parameters = [
+      { name: 'Temp:', unit: '°C', key: 'temp' },
+      { name: 'Min:', unit: '°C', key: 'min' },
+      { name: 'Max:', unit: '°C', key: 'max' },
+      { name: 'Wind:', unit: ' m/s', key: 'wind' },
+      { name: 'Weather: ', unit: '', key: 'weather' }
+    ];
+
+    parameters.forEach(param => {
+      let row = `<div class="day"><div class="cell">${param.name}</div>`;
+      allDaysData.forEach((day, index) => {
+        const isToday = index === 0; // First day is always today
+        row += `<div class="cell ${isToday ? 'today' : ''}">${day[param.key]}${param.unit}</div>`;
+      });
+      row += '</div>';
+      forecastDiv.innerHTML += row;
     });
   } catch (error) {
     console.error('Error fetching weather data:', error);
@@ -111,4 +137,8 @@ async function getWeather() {
   }
 }
 
+// Initial weather fetch
 getWeather();
+
+// Auto-refresh weather data every 2 hours (2 hours = 2 * 60 * 60 * 1000 milliseconds)
+setInterval(getWeather, 1 * 60 * 60 * 1000);
