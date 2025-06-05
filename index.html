@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
     <script src="weather.js"></script>  
+    <script src="gas_prices.js"></script>
 </head>
 <body onload="startTime(); tdate()">
     <!-- <h1>Stock Charts Dashboard</h1> -->
@@ -72,6 +73,14 @@
             <div class="timestamp" id="btcTimestamp">Last updated: Loading...</div>
         </div>
         <div class="forecast" id="forecast"></div>
+        <div class="gas-prices" id="gasPrices">
+            <div class="day header">
+                <div class="cell">Station</div>
+                <div class="cell">Price</div>
+                <div class="cell">Location</div>
+            </div>
+            <!-- Gas prices will be dynamically inserted here -->
+        </div>
     </div>
     <p>Version V25 (02-MAY-2025)</p>
     <script src="scripts.js"></script>
